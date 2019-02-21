@@ -1,0 +1,202 @@
+
+//#define DEBUG
+// Enable more interrupts than are usually accessible by arduino
+// See https://github.com/GreyGnome/EnableInterrupt and the README.md for more information.
+#include <EnableInterrupt.h> //for the encoders
+#include <Enc.h> // Matthew Harvey's simplistic encoder class
+#include <Wire.h>  // used by LiquidCrystal_I2C
+#include <LiquidCrystal_I2C.h>
+
+
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+uint8_t coordX[] = {0, 6, 12, 0, 6, 12}; //places to put the numbers in line with the labels on front panel
+uint8_t coordY[] = {0, 0, 0, 1, 1, 1};
+
+// Control mode switch
+#define BOTH 40
+#define PC 41
+#define FP 42
+
+// Dial setting switch
+#define TENV 36
+#define ONEV 35
+#define PONEV 34
+
+// ROTARY ENCODER SECTION
+#define E1A 11 // define the rotary encoder pins. These need to be interrupts for speed.
+#define E1B 10
+#define E2A A8
+#define E2B A9
+#define E3A A14
+#define E3B A15
+#define E4A A12
+#define E4B A13
+#define E5A A10
+#define E5B A11
+
+Enc encoder1(E1A, E1B); //setup the five encoders using my Enc class. Just pass it the pins to use
+Enc encoder2(E2A, E2B);
+Enc encoder3(E3A, E3B);
+Enc encoder4(E4A, E4B);
+Enc encoder5(E5A, E5B);
+
+//helper functions
+void enc1(){encoder1.interruptEnc();} //these wrappers are needed because I can't attach a class function to the interrupts below.
+void enc2(){encoder2.interruptEnc();} //maybe the EnableInterrupt library is c, not c++
+void enc3(){encoder3.interruptEnc();}
+void enc4(){encoder4.interruptEnc();}
+void enc5(){encoder5.interruptEnc();}
+
+void displayVoltages(); // updates the display with voltages
+void fpUpdateVoltages(); // update the voltages to send to the power supplies
+void getControlMode(); // returns 0 for Front panel, 1 for Both, 2 for PC
+void getDialSetting(); // returns 10 for 10V, 1 for 1V and 0.1 for 0.1V
+
+void setup() {
+
+  Serial.begin(115200);
+  
+  // Enable interrupts for the rotary encoder controls
+  enableInterrupt(E1A, enc1, CHANGE);
+  enableInterrupt(E1B, enc1, CHANGE);
+  enableInterrupt(E2A, enc2, CHANGE);
+  enableInterrupt(E2B, enc2, CHANGE);
+  enableInterrupt(E3A, enc3, CHANGE);
+  enableInterrupt(E3B, enc3, CHANGE);
+  enableInterrupt(E4A, enc4, CHANGE);
+  enableInterrupt(E4B, enc4, CHANGE);
+  enableInterrupt(E5A, enc5, CHANGE);
+  enableInterrupt(E5B, enc5, CHANGE);
+  
+  lcd.begin(16,2);   // initialize the lcd for 16 chars 2 lines, turn on backlight
+  
+  pinMode(FP,INPUT_PULLUP);
+  pinMode(BOTH,INPUT_PULLUP);
+  pinMode(PC,INPUT_PULLUP);
+  pinMode(TENV,INPUT_PULLUP);
+  pinMode(ONEV,INPUT_PULLUP);
+  pinMode(PONEV,INPUT_PULLUP);
+}
+
+
+
+int controlMode[2]={0,0}; //0 for Front panel, 1 for Both, 2 for PC, second element is changed flag: 0 unchanged, 1 changed
+
+double dialSetting=0;
+
+// define voltages for the power supplies
+double Voltages[5] = {}; //stores the power supply voltages divide by 10 for actual value in volts
+
+
+unsigned long previousMillis = 0;
+unsigned long currentMillis = 0;
+int interval = 50; // how many milliseconds to wait before reading the voltages and updating the front panel display
+
+
+void loop() {
+
+  
+  #ifdef DEBUG
+    Serial.print(steps1, DEC);      // print the interrupt count.
+  #endif
+  
+  currentMillis = millis();
+  if(currentMillis - previousMillis >= interval) {
+    getControlMode();
+    getDialSetting();
+    if (controlMode[0] < 2){
+      fpUpdateVoltages();
+    }
+    displayVoltages();
+  }
+  
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// Helper functions
+void getDialSetting(){
+  if (digitalRead(TENV) == false){
+    //Serial.print("10V");
+    dialSetting=10;
+  }
+  else if (digitalRead(ONEV) == false){
+    //Serial.print("1V");
+    dialSetting=1;
+  }
+  else{
+    //Serial.print("0.1V");
+    dialSetting=0.1;
+  }
+}
+
+void getControlMode(){
+  if (digitalRead(FP) == false){
+    if (controlMode[0]!=0){ //check whether the mode has changed
+      controlMode[0]=0;
+      controlMode[1]=1;
+    }
+  }
+  else if (digitalRead(BOTH) == false){
+    controlMode[0]=1;
+  }
+  else{
+    controlMode[0]=2;
+  }
+}
+
+void displayVoltages(){
+  //lcd.clear();
+  for (int i=0;i<5;i++) {
+    lcd.setCursor(coordX[i], coordY[i]);
+    if (Voltages[i] > 999.9){
+      lcd.print(Voltages[i],0);
+    }
+    else if (Voltages[i] > 99.9) {
+      if (i!=2){
+        lcd.print(Voltages[i],0);
+        lcd.print(" ");
+      } else{
+        lcd.print(" ");
+        lcd.print(Voltages[i],0);
+      }
+    }
+    else if (Voltages[i]> 9.9) {
+      if (i!=2){
+        lcd.print(((double)Voltages[i]),1);
+      } else{
+        lcd.print(" ");
+        lcd.print(((double)Voltages[i]),1);
+      }
+    }
+    else{
+      lcd.print(" ");
+      lcd.print(((double)Voltages[i]),1);
+    }
+  }
+  
+  lcd.setCursor(coordX[5], coordY[5]); // Display dial setting
+  if (dialSetting>2){
+    lcd.print(" 10V");
+  }
+  else if (dialSetting>0.2){
+    lcd.print("  1V");
+  }
+  else{
+    lcd.print("0.1V");
+  }
+}
+
+void fpUpdateVoltages(){ //only allow changes from the front panel if the switch is in the correct position
+  Voltages[0]+=dialSetting*encoder1.steps();
+  Voltages[1]+=dialSetting*encoder2.steps();
+  Voltages[2]+=dialSetting*encoder3.steps();
+  Voltages[3]+=dialSetting*encoder4.steps();
+  Voltages[4]+=dialSetting*encoder5.steps();
+  
+  for(int i=0;i<5;i++){ //Values must be between 0 and 5000
+    if (Voltages[i]<0){Voltages[i]=0;}
+    else if (Voltages[i]>5000){Voltages[i]=5000;}
+  }
+}
+

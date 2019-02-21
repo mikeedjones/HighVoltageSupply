@@ -1,0 +1,835 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman ae
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family rmdefault
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 11
+\spacing onehalf
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Computer controlled 5
+\begin_inset space ~
+\end_inset
+
+kV power supply system
+\end_layout
+
+\begin_layout Author
+Matthew Harvey
+\end_layout
+
+\begin_layout Abstract
+This document describes the development of a computer controlled, high voltage
+ power supply system to be used in the new cold atom electron source experiment
+ based in the Photon Science Institute at the University of Manchester.
+ The experiment requires five computer controllable high voltage power supplies
+ variable between 0
+\begin_inset space ~
+\end_inset
+
+V and 5
+\begin_inset space ~
+\end_inset
+
+kV.
+ 
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The cold atom electron source (CAES) experiment creates cold electrons by
+ photo-ionisation of a cloud of cold atoms, cooled and confined by a magneto-opt
+ical trap (MOT).
+ The electrons are then extracted from the cloud with a set of extraction
+ electrodes before being focussed on to an imaging multi-channel plate and
+ phosphor (MCP).
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:ElectrodeDiagram"
+
+\end_inset
+
+ shows the arrangement of the electrodes.
+ The atom cloud sits between two extraction plates which are set to 
+\begin_inset Formula $\mp V_{extraction}$
+\end_inset
+
+ in order to accelerate the electrons towards the MCP.
+ The third plate has a negative voltage, 
+\begin_inset Formula $V_{focus}$
+\end_inset
+
+, applied to it in order to focus the beam on to the MCP.
+ The back plate of the MCP needs about 
+\begin_inset Formula $V_{back}=1$
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+kV applied to it and the phosphor needs 
+\begin_inset Formula $V_{phos}=5$
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+kV applied to it.
+ 
+\begin_inset Formula $V_{extraction}$
+\end_inset
+
+ and 
+\begin_inset Formula $V_{focus}$
+\end_inset
+
+ need to be varied between 0
+\begin_inset space ~
+\end_inset
+
+V and 5
+\begin_inset space ~
+\end_inset
+
+kV by computer control.
+ In this way, the electron beam energy and focus can be optimised.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/ElectrodeDiagram.jpg
+	lyxscale 20
+	scale 15
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:ElectrodeDiagram"
+
+\end_inset
+
+Diagram showing the extraction electrodes and MCP used to image cold electrons.
+ The numbers 1-5 show the elements where the high voltage applied must be
+ computer controlled.
+ Element 1 must be between 0
+\begin_inset space ~
+\end_inset
+
+V and -5
+\begin_inset space ~
+\end_inset
+
+kV.
+ All other elements must be between 0
+\begin_inset space ~
+\end_inset
+
+V and +5
+\begin_inset space ~
+\end_inset
+
+kV
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Hardware
+\end_layout
+
+\begin_layout Standard
+The cheapest quote for buying five dedicated dual polarity, 5
+\begin_inset space ~
+\end_inset
+
+kV programmable power supplies can in at >£9000.
+ As such, I decided to buy five cheap power supply modules and build them
+ in to a rack mount control box.
+ The requirements were:
+\end_layout
+
+\begin_layout Itemize
+Five 5
+\begin_inset space ~
+\end_inset
+
+kV remote controlled supplies required.
+ One negative, four positive polarity.
+\end_layout
+
+\begin_layout Itemize
+Must be controllable via the front panel.
+\end_layout
+
+\begin_layout Itemize
+Must have a switch or switches to select front panel control or computer
+ control.
+\end_layout
+
+\begin_layout Itemize
+Front panel needs a display to show the applied voltages.
+\end_layout
+
+\begin_layout Standard
+A mock up of the front and back panels can be seen in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:PanelMock"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/FrontPanel.jpg
+	lyxscale 20
+	scale 12
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/BackPanel.jpg
+	lyxscale 15
+	scale 12
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:PanelMock"
+
+\end_inset
+
+Mock up of front panel and back panel for power supply control box.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The cheapest power supplies with serial data input were Spellman MPS5 supply
+ modules with option DCC4 which has the addition of 16
+\begin_inset space ~
+\end_inset
+
+bit digital to analogue converters set by RS485 serial comms.
+ For five, the total price including VAT is £1800.
+ With hindsight, I should have purchased the modules without computer control
+ and added that myself.
+ This would have saved £600 and simplified the design.
+ When the serial input option is specified, the ability to set the output
+ voltage via an external control voltage is lost.
+ The upside is that the output voltages are computer controllable to the
+ nearest 76
+\begin_inset space ~
+\end_inset
+
+mV over the full output range.
+ It took two weeks to iron out the bugs in getting the serial communications
+ to work correctly but at least I'll know the subtleties for next time.
+\end_layout
+
+\begin_layout Standard
+Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:PSRackPics"
+
+\end_inset
+
+ shows the finished result.
+ The front panel has an LCD display which shows the voltages of the five
+ power supplies, and whether the voltage step size of the front panel encoders
+ is set to 0.1
+\begin_inset space ~
+\end_inset
+
+V, 1
+\begin_inset space ~
+\end_inset
+
+V or 10
+\begin_inset space ~
+\end_inset
+
+V.
+ The voltage step size is set by a three way switch on the right hand side
+ of the LCD.
+ The switch on the left hand side controls whether the power supplies can
+ be controlled solely by the PC, solely by the front panel, or both.
+ The five rotary encoders set the voltages on the five power supply modules
+ according to the voltage setting switch, except when the control mode is
+ set to PC only.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/IMG_20150622_124814.jpg
+	lyxscale 20
+	width 8cm
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename Figures/IMG_20150609_174041.jpg
+	lyxscale 20
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/IMG_20150720_153243.jpg
+	lyxscale 20
+	width 8cm
+	rotateAngle 90
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename Figures/IMG_20150609_124259.jpg
+	lyxscale 20
+	width 8cm
+	rotateAngle 90
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:PSRackPics"
+
+\end_inset
+
+Top left: The front control panel.
+ Top right: The back panel showing USB connection and HV out.
+ Bottom left: The modules mounted on the rack frame.
+ Bottom right: The back of the front panel showing the (crude) wiring of
+ the encoders, LCD, Arduino Mega2560 board and MAX485 breakout board.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The USB feedthrough on the back panel requires a USB-A male to USV-A male
+ cable.
+ The USB connection emulates a serial port on the PC such that a simple
+ serial communication interface can be used to read the voltages and currents
+ on the modules and set the voltages from the PC.
+ 
+\end_layout
+
+\begin_layout Standard
+Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:HardwareSchematic"
+
+\end_inset
+
+ shows the schematic for the control and interface hardware between the
+ front panel, PC and MPS HV modules.
+ An Arduino Mega2560 is used to interface between the PC and the MPS modules
+ as well as display the voltages on the front panel LCD and accept voltage
+ adjustments via the rotary encoder knobs.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename Figures/HV-Supply-Schematic.svg
+	lyxscale 30
+	width 17.5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:HardwareSchematic"
+
+\end_inset
+
+A schematic showing the hardware connections used to control the MPS HV
+ modules.
+ An Arduino Mega 2560 interacts with an I2C interfaced LCD, 5 rotary encoders,
+ two three way switches and a MAX485 interface breakout board.
+ The MAX485 board handles a small RS485 network used communicate with the
+ MPS modules.
+ Not shown is the USB PC serial connection since this is the standard USB
+ connection made directly to the Arduino board.
+ A 24
+\begin_inset space ~
+\end_inset
+
+V, 6.5
+\begin_inset space ~
+\end_inset
+
+A switched mode power supply powers the MPS modules and a linear 8
+\begin_inset space ~
+\end_inset
+
+V, 1
+\begin_inset space ~
+\end_inset
+
+A power supply powers the Arduino, MAX485 board and LCD panel.
+ All share a common ground including the HV outputs.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The LCD panel is a cheap AliExpress item with built in I2C control option.
+ There are several LCD libraries written for the arduino that can communicate
+ with this panel.
+ The 
+\end_layout
+
+\begin_layout Standard
+The loss of external voltage control due to the DCC option means that the
+ voltage dials on the front panel will now turn rotary encoders.
+ I'll use an arduino to keep track of the voltages and handle a small RS485
+ network to communicate with the MPS modules.
+ The PC will communicate with the arduino via its USB serial interface.
+\end_layout
+
+\begin_layout Standard
+The front panel now consists of a three way switch used to select PC only,
+ both front panel and PC, and front panel only control.
+ Five rotary encoders set the voltages on the individual power supplies.
+ A second three way switch selects the voltage 
+\end_layout
+
+\begin_layout Section
+Hardware
+\end_layout
+
+\begin_layout Standard
+Five Spellman MPS5 kV power supply modules with option DCC4, RS485 comms.
+ interfaces are housed in a 19
+\begin_inset Quotes erd
+\end_inset
+
+ rack mountable box.
+ A 24V 6.5A switched mode power supply is used to power the modules.
+ An Arduino Mega2560 is used to handle communications between a PC and the
+ MPS modules via a MAX485 adapter module.
+ The Arduino also handles inputs from the front panel and updates an I2C
+ interfaced LCD display.
+\end_layout
+
+\begin_layout Section
+Software
+\end_layout
+
+\begin_layout Standard
+Required arduino libraries:
+\end_layout
+
+\begin_layout Standard
+Enc
+\end_layout
+
+\begin_layout Standard
+MPS
+\end_layout
+
+\begin_layout Standard
+EnableInterrupt
+\end_layout
+
+\begin_layout Standard
+LiquidCrystal
+\end_layout
+
+\begin_layout Standard
+The encoders use three pins: A, B and GND.
+ The arduino is connected to A and B and these pins are set so that their
+ internal pullup resistors pull the voltage level high.
+ When the encoder is turned, the contacts on A and B are shorted to GND.
+ 
+\end_layout
+
+\begin_layout Subsection
+Serial protocol
+\end_layout
+
+\begin_layout Standard
+The modules communicate with an ascii encoded format.
+ The 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<STX>n5V1=xxxx.xC<LF>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<STX>
+\end_layout
+
+\end_inset
+
+ is the ascii code 0x02 for 
+\begin_inset Quotes eld
+\end_inset
+
+start of text
+\begin_inset Quotes erd
+\end_inset
+
+ program control character.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<LF>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Valid commands to send from PC
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="3">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Command
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Response
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Action
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+<STX>05V1?c<LF>
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
